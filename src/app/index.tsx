@@ -1,228 +1,106 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, Button, Platform, Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { WebView, type WebViewNavigation } from 'react-native-webview';
-import * as Network from 'expo-network';
-import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+﻿import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
+import { getPublicConfig, type PublicConfig } from '@/lib/supabase';
 
-const WEB_URL = 'https://crushr.fun';
-
-export default function HomeScreen() {
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isOffline, setIsOffline] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [webViewKey, setWebViewKey] = useState(0);
-
-  const webviewRef = useRef<WebView>(null);
+export default function LandingScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const statusBarStyle = Platform.OS === 'android' ? 'light' : 'auto';
+  const [config, setConfig] = useState<PublicConfig | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
+  const [loadingConfig, setLoadingConfig] = useState(true);
 
-  const containerStyle = useMemo(
-    () => [styles.container, { backgroundColor: theme.background, paddingTop: insets.top }],
-    [theme.background, insets.top]
-  );
+  useEffect(() => {
+    let mounted = true;
 
-  const checkNetworkState = useCallback(async () => {
-    try {
-      const state = await Network.getNetworkStateAsync();
-      const connected = state.isConnected && state.isInternetReachable !== false;
-      setIsOffline(!connected);
-      if (!connected) {
-        setErrorMessage('No internet connection');
-      } else if (errorMessage) {
-        setErrorMessage(null);
+    async function loadConfig() {
+      try {
+        const data = await getPublicConfig();
+        if (mounted) {
+          setConfig(data);
+          setConfigError(null);
+        }
+      } catch (error) {
+        if (mounted) {
+          setConfigError(error instanceof Error ? error.message : 'Unable to load backend config');
+        }
+      } finally {
+        if (mounted) {
+          setLoadingConfig(false);
+        }
       }
-      return connected;
-    } catch {
-      setIsOffline(true);
-      setErrorMessage('Unable to detect network state');
-      return false;
     }
-  }, [errorMessage]);
 
-  const refreshWebView = useCallback(async () => {
-    setIsRefreshing(true);
-    await checkNetworkState();
-    setWebViewKey((value) => value + 1);
-    setTimeout(() => setIsRefreshing(false), 800);
-  }, [checkNetworkState]);
+    loadConfig();
 
-  const handleBackPress = useCallback(() => {
-    if (canGoBack && webviewRef.current) {
-      webviewRef.current.goBack();
-      return true;
-    }
-    return false;
-  }, [canGoBack]);
-
-  useEffect(() => {
-    void checkNetworkState();
-  }, [checkNetworkState]);
-
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
-    return () => subscription.remove();
-  }, [handleBackPress]);
-
-  const onNavigationStateChange = useCallback((event: WebViewNavigation) => {
-    setCanGoBack(event.canGoBack);
+    return () => {
+      mounted = false;
+    };
   }, []);
-
-  const onLoadProgress = useCallback((event: { nativeEvent: { progress: number } }) => {
-    setProgress(event.nativeEvent.progress);
-  }, []);
-
-  const showOffline = isOffline || !!errorMessage;
 
   return (
-    <SafeAreaView style={containerStyle}>
-      <StatusBar style={statusBarStyle} backgroundColor={theme.backgroundElement} />
-      <ThemedView style={[styles.header, { backgroundColor: theme.backgroundElement }]}>
-        <View style={styles.brandRow}>
-          <ThemedText type="subtitle">CRUSHR</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Social networking made native.
-          </ThemedText>
-        </View>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <ThemedView type="backgroundElement" style={styles.heroCard}>
+          <Text style={styles.eyebrow}>Crushr native</Text>
+          <Text style={styles.title}>Anonymous notes, gift cards, and chatrooms in one elegant mobile shell.</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>This native shell mirrors the web experience with a premium dark theme, deep-link-ready screens, and quick access to the core social feed.</Text>
 
-        <View style={styles.actionRow}>
-          <Pressable style={styles.actionButton} onPress={() => router.push('/messages')}>
-            <SymbolView name={{ android: 'message' }} size={20} tintColor={theme.text} />
-          </Pressable>
-          <Pressable style={styles.actionButton} onPress={() => router.push('/profile')}>
-            <SymbolView name={{ android: 'person' }} size={20} tintColor={theme.text} />
-          </Pressable>
-        </View>
-      </ThemedView>
-
-      <View style={[styles.statusBar, { backgroundColor: theme.backgroundElement, width: `${Math.min(progress * 100, 100)}%` }]} />
-
-      {showOffline ? (
-        <View style={styles.offlineContainer}>
-          <ThemedText type="title">Offline mode</ThemedText>
-          <ThemedText themeColor="textSecondary" style={styles.offlineText}>
-            {errorMessage ?? 'Your device is not connected to the internet. Refresh to try again.'}
-          </ThemedText>
-          <View style={styles.offlineActions}>
-            <Button title="Retry" onPress={refreshWebView} color={Platform.OS === 'android' ? '#0F4FA1' : undefined} />
+          <View style={styles.ctaRow}>
+            <Pressable style={[styles.primaryButton, { backgroundColor: theme.backgroundSelected }]} onPress={() => router.push('/messages')}>
+              <Text style={[styles.buttonLabel, { color: theme.text }]}>Get started</Text>
+            </Pressable>
+            <Pressable style={[styles.secondaryButton, { backgroundColor: theme.backgroundElement }]} onPress={() => router.push('/profile')}>
+              <Text style={[styles.buttonLabel, { color: theme.text }]}>Browse feed</Text>
+            </Pressable>
           </View>
+        </ThemedView>
+
+        <ThemedView type="backgroundElement" style={styles.backendCard}>
+          <Text style={[styles.tileLabel, { color: theme.text }]}>Backend status</Text>
+          <Text style={[styles.backendText, { color: theme.textSecondary }]}>
+            {loadingConfig
+              ? 'Checking Supabase public config…'
+              : configError
+                ? `Connection issue: ${configError}`
+                : `OneSignal app ID: ${config?.onesignal_app_id ?? 'not configured'} • Socket: ${config?.socket_server_url ?? 'not configured'}`}
+          </Text>
+          {loadingConfig ? <ActivityIndicator style={styles.loader} color="#ff2d74" /> : null}
+        </ThemedView>
+
+        <View style={styles.grid}>
+          {['Encrypted asks', 'Gift card reveal', 'Swipable chatrooms'].map((item) => (
+            <ThemedView key={item} type="backgroundElement" style={styles.tile}>
+              <Text style={[styles.tileLabel, { color: theme.text }]}>{item}</Text>
+            </ThemedView>
+          ))}
         </View>
-      ) : (
-        <View style={styles.webviewContainer}>
-          {isLoading && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#0F4FA1" />
-              <ThemedText type="small" style={styles.loadingLabel}>
-                Loading community feed...
-              </ThemedText>
-            </View>
-          )}
-          <WebView
-            key={webViewKey}
-            ref={webviewRef}
-            source={{ uri: WEB_URL }}
-            onNavigationStateChange={onNavigationStateChange}
-            onLoadStart={() => {
-              setIsLoading(true);
-              setErrorMessage(null);
-            }}
-            onLoadEnd={() => setIsLoading(false)}
-            onLoadProgress={onLoadProgress}
-            onError={() => setErrorMessage('Unable to load the website')}
-            pullToRefreshEnabled={Platform.OS === 'android'}
-            onRefresh={refreshWebView}
-            pullToRefreshBackgroundColor={theme.backgroundElement}
-            startInLoadingState
-            style={styles.webview}
-          />
-        </View>
-      )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    paddingTop: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#d7d7d7',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-
-  },
-  brandRow: {
-    flex: 1,
-  },
-  actionRow: {
-    flexDirection: 'row',
-  },
-  subtitleText: {
-    marginTop: 4,
-  },
-  actionButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 14,
-  },
-  statusBar: {
-    height: 3,
-  },
-  webviewContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  webview: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  offlineContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  offlineText: {
-    textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  offlineActions: {
-    width: '100%',
-    maxWidth: 320,
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    zIndex: 1,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.9)',
-  },
-  loadingLabel: {
-    marginTop: 10,
-  },
+  safeArea: { flex: 1 },
+  container: { flexGrow: 1, padding: 18, justifyContent: 'center' },
+  heroCard: { borderRadius: 24, padding: 18 },
+  eyebrow: { textTransform: 'uppercase', letterSpacing: 2, color: '#ff2d74', fontSize: 12, marginBottom: 6 },
+  title: { color: '#fff', fontSize: 30, fontWeight: '700', lineHeight: 38, marginBottom: 10 },
+  subtitle: { fontSize: 15, lineHeight: 21 },
+  ctaRow: { flexDirection: 'row', gap: 10, marginTop: 18 },
+  primaryButton: { flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: 'center' },
+  secondaryButton: { flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: 'center' },
+  buttonLabel: { fontWeight: '600' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 18 },
+  backendCard: { borderRadius: 18, padding: 14, marginTop: 18 },
+  backendText: { fontSize: 13, lineHeight: 18, marginTop: 6 },
+  loader: { marginTop: 8 },
+  tile: { flexBasis: '100%', borderRadius: 18, padding: 14 },
+  tileLabel: { fontSize: 16, fontWeight: '600' },
 });
 
 

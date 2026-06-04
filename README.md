@@ -1,8 +1,29 @@
-# Welcome to your Expo app 👋
+# Crushr native app
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This Expo Router app now uses a polished native landing page and a clean route shell for the Crushr mobile experience.
 
-## Get started
+## Environment
+
+Set these values in the app shell before connecting to the live Supabase backend:
+
+- EXPO_PUBLIC_SUPABASE_URL=https://hkifkaesfvfmxcacziev.supabase.co
+- EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+## Run locally
+
+1. npm install
+2. npx expo start
+3. Use Expo Go / simulator to open the app.
+
+## Build for Android / iOS
+
+- Android: eas build --platform android
+- iOS: eas build --platform ios
+
+## OneSignal / deep links
+
+- Add your OneSignal app ID in the native push setup when ready.
+- Test deep links with: expo start --dev-client
 
 1. Install dependencies
 
