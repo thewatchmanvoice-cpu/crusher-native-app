@@ -131,24 +131,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#0A0A0A',
   },
   content: {
+    flexGrow: 1,
+    justifyContent: 'center',
     padding: 24,
-    paddingTop: 60,
+    paddingVertical: 40,
   },
   logo: {
     fontSize: 32,
     fontWeight: '700',
     color: '#FF1744',
     marginBottom: 10,
+    textAlign: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#FFF',
+    textAlign: 'center',
   },
   subtitle: {
     color: '#999',
     marginTop: 5,
     marginBottom: 30,
+    textAlign: 'center',
   },
   input: {
     backgroundColor: '#171717',
@@ -158,6 +163,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     marginBottom: 15,
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
   },
   signupButton: {
     backgroundColor: '#FF1744',

@@ -1,0 +1,184 @@
+﻿Diagnose log at 2026-06-07T04:20:47Z
+
+AppPath: C:\Users\GOODLUCK\Git\mingw64\bin\git-credential-manager.exe
+InstallDir: C:\Users\GOODLUCK\Git\mingw64\bin\
+Version: 2.7.3+5fa7116896c82164996a609accd1c5ad90fe730a
+
+------------
+Diagnostic: Environment
+Skipped: False
+Success: True
+Exception: None
+Log:
+OSType: Windows
+OSVersion: 10.0 (build 19045)
+Reading environment variables... OK
+ Variables:
+SystemDrive=C:
+ProgramFiles(x86)=C:\Program Files (x86)
+MSYSTEM=MINGW64
+ProgramW6432=C:\Program Files
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 37 Stepping 5, GenuineIntel
+TMP=C:\Users\GOODLUCK\AppData\Local\Temp
+PROCESSOR_ARCHITECTURE=AMD64
+VSCODE_GIT_ASKPASS_MAIN=c:\Users\GOODLUCK\AppData\Roaming\Code\User\globalStorage\vscode.git\askpass\493597c785d4c5cb\askpass-main.js
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+VSCODE_GIT_IPC_HANDLE=\\.\pipe\vscode-git-24b68919e6-sock
+PROCESSOR_REVISION=2505
+TEMP=C:\Users\GOODLUCK\AppData\Local\Temp
+USERPROFILE=C:\Users\GOODLUCK
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+LOGONSERVER=\\DESKTOP-3M7MU7M
+TERM=xterm-256color
+USERNAME=GOODLUCK
+SystemRoot=C:\Windows
+CHROME_CRASHPAD_PIPE_NAME=\\.\pipe\crashpad_8936_TJAEZZXFKAKOCXZU
+GIT_EXEC_PATH=C:/Users/GOODLUCK/Git/mingw64/libexec/git-core
+PLINK_PROTOCOL=ssh
+GIT_PAGER=cat
+CommonProgramFiles=C:\Program Files\Common Files
+VSCODE_INJECTION=1
+VSCODE_PYTHON_AUTOACTIVATE_GUARD=1
+ProgramData=C:\ProgramData
+LANG=en_US.UTF-8
+GIT_ASKPASS=c:\Users\GOODLUCK\AppData\Roaming\Code\User\globalStorage\vscode.git\askpass\493597c785d4c5cb\askpass.sh
+HOMEPATH=\Users\GOODLUCK
+COMPUTERNAME=DESKTOP-3M7MU7M
+ALLUSERSPROFILE=C:\ProgramData
+CommonProgramW6432=C:\Program Files\Common Files
+COPILOT_DEBUG_NONCE=807dbe5ef0dc53b601fe9644eaf242e6
+COPILOT_AGENT=1
+DriverData=C:\Windows\System32\Drivers\DriverData
+HOMEDRIVE=C:
+windir=C:\Windows
+GIT_TRACE2_PARENT_SID=3d4472cc-eff4-43cf-8f26-09e0af57fe01
+VSCODE_GIT_ASKPASS_NODE=C:\Users\GOODLUCK\AppData\Local\Programs\Microsoft VS Code\Code.exe
+NUMBER_OF_PROCESSORS=4
+OS=Windows_NT
+GIT_MERGE_AUTOEDIT=no
+ProgramFiles=C:\Program Files
+ComSpec=C:\Windows\system32\cmd.exe
+GIT_EDITOR=:
+HOME=C:\Users\GOODLUCK
+PSModulePath=C:\Users\GOODLUCK\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+TMPDIR=C:\Users\GOODLUCK\AppData\Local\Temp
+APPDATA=C:\Users\GOODLUCK\AppData\Roaming
+USERDOMAIN=DESKTOP-3M7MU7M
+PROCESSOR_LEVEL=6
+Path=C:/Users/GOODLUCK/Git/mingw64/libexec/git-core;C:\Users\GOODLUCK\Git\mingw64\bin;C:\Users\GOODLUCK\Git\usr\bin;C:\Users\GOODLUCK\bin;c:\Users\GOODLUCK\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\GOODLUCK\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Users\GOODLUCK\AppData\Local\Muse Hub\lib;C:\Users\GOODLUCK\Git\cmd;C:\Users\GOODLUCK\;C:\Users\GOODLUCK\AppData\Local\Microsoft\WindowsApps;C:\Users\GOODLUCK\AppData\Local\Muse Hub\lib;C:\Users\GOODLUCK\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\GOODLUCK\AppData\Roaming\npm;C:\Users\GOODLUCK\AppData\Local\Microsoft\WinGet\Packages\Google.AndroidCLI_Microsoft.Winget.Source_8wekyb3d8bbwe
+LOCALAPPDATA=C:\Users\GOODLUCK\AppData\Local
+TERM_PROGRAM_VERSION=1.123.0
+USERDOMAIN_ROAMINGPROFILE=DESKTOP-3M7MU7M
+COLORTERM=truecolor
+PUBLIC=C:\Users\Public
+TERM_PROGRAM=vscode
+VSCODE_GIT_ASKPASS_EXTRA_ARGS=
+
+
+------------
+Diagnostic: File system
+Skipped: False
+Success: True
+Exception: None
+Log:
+Temporary directory is 'C:\Users\GOODLUCK\AppData\Local\Temp\'...
+Checking basic file I/O...
+Writing to temporary file 'C:\Users\GOODLUCK\AppData\Local\Temp\4cae435e9c9143652420b7c5'... OK
+Reading from temporary file 'C:\Users\GOODLUCK\AppData\Local\Temp\4cae435e9c9143652420b7c5'... OK
+Deleting temporary file 'C:\Users\GOODLUCK\AppData\Local\Temp\4cae435e9c9143652420b7c5'... OK
+Testing IFileSystem instance...
+UserHomePath: C:\Users\GOODLUCK
+UserDataDirectoryPath: C:\Users\GOODLUCK\.gcm
+GetCurrentDirectory(): C:\Users\GOODLUCK\MyWebsiteApp
+
+------------
+Diagnostic: Networking
+Skipped: False
+Success: True
+Exception: None
+Log:
+Checking networking and HTTP stack...
+Creating HTTP client... OK
+IsNetworkAvailable: True
+Sending HEAD request to http://example.com...Sending HEAD request to https://example.com... OK
+ OK
+Acquiring free TCP port... OK
+Testing local HTTP loopback connections...
+Creating new HTTP listener for http://localhost:56101/... OK
+Waiting for loopback connection... OK
+Writing response... OK
+Waiting for response data... OK
+Loopback connection data OK
+
+------------
+Diagnostic: Git
+Skipped: False
+Success: True
+Exception: None
+Log:
+Getting Git version... OK
+Git version is '2.54.0.windows.1'
+Locating current repository...Git repository at 'C:/Users/GOODLUCK/MyWebsiteApp/.git'
+ OK
+Listing all Git configuration... OK
+Git configuration:
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	diff.astextplain.textconv=astextplain
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	filter.lfs.required=true
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	http.sslbackend=schannel
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	core.autocrlf=true
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	core.fscache=true
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	core.symlinks=false
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	pull.rebase=false
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	credential.helper=manager
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+file:C:/Users/GOODLUCK/Git/etc/gitconfig	init.defaultbranch=master
+file:.git/config	core.repositoryformatversion=0
+file:.git/config	core.filemode=false
+file:.git/config	core.bare=false
+file:.git/config	core.logallrefupdates=true
+file:.git/config	core.symlinks=false
+file:.git/config	core.ignorecase=true
+file:.git/config	user.email=dev@crushr.fun
+file:.git/config	user.name=CRUSHR Developer
+file:.git/config	remote.origin.url=https://github.com/thewatchmanvoice-cpu/crusher-native-app.git
+file:.git/config	remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+
+
+------------
+Diagnostic: Credential storage
+Skipped: False
+Success: True
+Exception: None
+Log:
+ICredentialStore instance is of type: CredentialStore
+Writing test credential... OK
+Reading test credential... OK
+Deleting test credential... OK
+
+------------
+Diagnostic: Microsoft authentication (AAD/MSA)
+Skipped: False
+Success: True
+Exception: None
+Log:
+Broker is not enabled.
+Flow type is: Auto
+Gathering MSAL token cache data... OK
+CacheDirectory: C:\Users\GOODLUCK\AppData\Local\.IdentityService
+CacheFileName: msal.cache
+CacheFilePath: C:\Users\GOODLUCK\AppData\Local\.IdentityService\msal.cache
+Creating cache helper... OK
+Verifying MSAL token cache persistence... OK
+
+------------
+Diagnostic: GitHub API
+Skipped: False
+Success: True
+Exception: None
+Log:
+Using 'https://github.com/' as API target.
+Querying '/meta' endpoint... OK
+
