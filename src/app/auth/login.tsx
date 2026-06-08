@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/colors';
-import { supabase } from '@/lib/supabase';
+import { signInWithEmail } from '@/services/auth';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -19,19 +19,15 @@ export default function LoginScreen() {
   async function handleLogin() {
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Login Failed', error.message);
-      return;
+    try {
+      await signInWithEmail(email, password);
+      router.replace('/(tabs)');
+    } catch (err) {
+      const message = (err as any)?.message ?? 'Login failed';
+      Alert.alert('Login Failed', message);
+    } finally {
+      setLoading(false);
     }
-
-    router.replace('/(tabs)');
   }
 
   return (

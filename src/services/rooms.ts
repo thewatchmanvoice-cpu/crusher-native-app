@@ -1,7 +1,9 @@
-import { supabase } from '@/lib/supabase';
+import getSupabase from '@/lib/supabase';
 import type { Chatroom } from '@/types';
 
 export async function listChatrooms(): Promise<Chatroom[]> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase
     .from('chatrooms')
     .select('*')
@@ -12,6 +14,8 @@ export async function listChatrooms(): Promise<Chatroom[]> {
 }
 
 export async function joinRoom(roomId: string, userId: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { error } = await supabase
     .from('chatroom_members')
     .insert({ chatroom_id: roomId, user_id: userId });
@@ -19,6 +23,8 @@ export async function joinRoom(roomId: string, userId: string) {
 }
 
 export async function fetchRoomMessages(roomId: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase
     .from('chatroom_messages')
     .select('*')

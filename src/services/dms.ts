@@ -1,6 +1,8 @@
-import { supabase } from '@/lib/supabase';
+import getSupabase from '@/lib/supabase';
 
 export async function listDMThreads(userId: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   // Placeholder mapping over private_messages; adjust if RPC exists.
   const { data, error } = await supabase
     .from('private_messages')
@@ -13,6 +15,8 @@ export async function listDMThreads(userId: string) {
 }
 
 export async function fetchMessages(threadKey: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase
     .from('private_messages')
     .select('*')
@@ -23,6 +27,8 @@ export async function fetchMessages(threadKey: string) {
 }
 
 export async function sendMessage(threadId: string, senderId: string, recipientId: string, content: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase
     .from('private_messages')
     .insert({ thread_id: threadId, sender_id: senderId, recipient_id: recipientId, content })
@@ -33,6 +39,8 @@ export async function sendMessage(threadId: string, senderId: string, recipientI
 }
 
 export async function createOrGetChat(otherUserId: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   // Calls existing edge function — does NOT change backend
   const { data, error } = await supabase.functions.invoke('create-or-get-chat', {
     body: { other_user_id: otherUserId },

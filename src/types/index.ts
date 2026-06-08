@@ -20,6 +20,30 @@ export interface Post {
   created_at: string;
 }
 
+export interface PostComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  author?: Profile;
+}
+
+export interface PostLike {
+  id: string;
+  post_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface PostReaction {
+  id: string;
+  post_id: string;
+  user_id: string;
+  reaction: string;
+  created_at: string;
+}
+
 export interface Chatroom {
   id: string;
   name: string;

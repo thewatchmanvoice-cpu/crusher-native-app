@@ -10,24 +10,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { signUpWithEmail } from '@/services/auth';
+import { Colors } from '@/constants/colors';
+import { Spacing, Radius } from '@/constants/spacing';
+import { Typography } from '@/constants/typography';
 
 export default function SignupScreen() {
   const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
-  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
-    if (
-      !fullName ||
-      !username ||
-      !phone ||
-      !email ||
-      !password ||
-      !confirmPassword
-    ) {
+    if (!fullName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
@@ -37,86 +33,77 @@ export default function SignupScreen() {
       return;
     }
 
-    Alert.alert(
-      'Signup Ready',
-      'Next step is connecting this form to Supabase.'
-    );
+    setLoading(true);
+    try {
+      await signUpWithEmail(email, password, fullName);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      Alert.alert('Signup Error', err.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.logo}>❤️ Crushr</Text>
+        <Text style={[Typography.h1, { color: Colors.primary, marginBottom: Spacing.md }]}>Crushr</Text>
 
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[Typography.h2, { marginBottom: Spacing.xs }]}>Create Account</Text>
+        <Text style={[Typography.caption, { color: Colors.textMuted, marginBottom: Spacing.xl }]}>
           Join Crushr and start connecting.
         </Text>
 
         <TextInput
           style={styles.input}
           placeholder="Full Name"
-          placeholderTextColor="#888"
+          placeholderTextColor={Colors.textSubtle}
           value={fullName}
           onChangeText={setFullName}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          placeholderTextColor="#888"
-          value={username}
-          onChangeText={setUsername}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number"
-          placeholderTextColor="#888"
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
+          editable={!loading}
         />
 
         <TextInput
           style={styles.input}
           placeholder="Email Address"
-          placeholderTextColor="#888"
+          placeholderTextColor={Colors.textSubtle}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
+          editable={!loading}
         />
 
         <TextInput
           style={styles.input}
           placeholder="Password"
-          placeholderTextColor="#888"
+          placeholderTextColor={Colors.textSubtle}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
+          editable={!loading}
         />
 
         <TextInput
           style={styles.input}
           placeholder="Confirm Password"
-          placeholderTextColor="#888"
+          placeholderTextColor={Colors.textSubtle}
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
+          editable={!loading}
         />
 
         <TouchableOpacity
-          style={styles.signupButton}
+          style={[styles.signupButton, loading && { opacity: 0.6 }]}
           onPress={handleSignup}
+          disabled={loading}
         >
-          <Text style={styles.signupText}>Create Account</Text>
+          <Text style={styles.signupText}>{loading ? 'Creating account…' : 'Create Account'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => router.push('/auth/login')}
-        >
-          <Text style={styles.loginText}>
+        <TouchableOpacity onPress={() => router.push('/auth/login')} disabled={loading}>
+          <Text style={[Typography.caption, { color: Colors.primary, textAlign: 'center', marginTop: Spacing.lg }]}>
             Already have an account? Sign In
           </Text>
         </TouchableOpacity>
@@ -126,62 +113,30 @@ export default function SignupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0A0A0A',
-  },
   content: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    padding: Spacing.xl,
     paddingVertical: 40,
   },
-  logo: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#FF1744',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#FFF',
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: '#999',
-    marginTop: 5,
-    marginBottom: 30,
-    textAlign: 'center',
-  },
   input: {
-    backgroundColor: '#171717',
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: '#2A2A2A',
-    color: '#FFF',
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 15,
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    borderColor: Colors.border,
+    color: Colors.text,
+    padding: Spacing.lg,
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.md,
   },
   signupButton: {
-    backgroundColor: '#FF1744',
-    padding: 18,
-    borderRadius: 14,
+    backgroundColor: Colors.primary,
+    padding: Spacing.lg,
+    borderRadius: Radius.lg,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: Spacing.md,
   },
   signupText: {
-    color: '#FFF',
+    color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
-  },
-  loginText: {
-    color: '#FF1744',
-    textAlign: 'center',
-    marginTop: 25,
   },
 });

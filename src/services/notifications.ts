@@ -1,7 +1,9 @@
-import { supabase } from '@/lib/supabase';
+import getSupabase from '@/lib/supabase';
 import type { Notification } from '@/types';
 
 export async function listNotifications(userId: string): Promise<Notification[]> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
@@ -13,5 +15,7 @@ export async function listNotifications(userId: string): Promise<Notification[]>
 }
 
 export async function markAllRead(userId: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('user_id', userId).is('read_at', null);
 }

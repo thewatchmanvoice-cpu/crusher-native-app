@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { Alert, Share, View, ScrollView, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Header } from '@/components/Header';
@@ -12,6 +12,7 @@ import { Colors } from '@/constants/colors';
 import { Spacing, Radius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { fetchFeed, fetchProfilesByIds } from '@/services/feed';
+import { likePost } from '@/services/posts';
 import type { Post, Profile } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -41,6 +42,27 @@ export default function HomeScreen() {
     setRefreshing(true);
     await load();
     setRefreshing(false);
+  };
+
+  const handleFeedLike = async (postId: string) => {
+    if (!user) {
+      Alert.alert('Login required', 'Please sign in to like posts.');
+      return;
+    }
+    try {
+      await likePost(postId, user.id);
+      Alert.alert('Liked', 'Your like was saved.');
+    } catch (error: any) {
+      Alert.alert('Unable to like', error?.message || 'Please try again.');
+    }
+  };
+
+  const handleFeedShare = async (postId: string) => {
+    try {
+      await Share.share({ message: `https://crushr.com/post/${postId}` });
+    } catch (error: any) {
+      if (error?.message) Alert.alert('Unable to share', error.message);
+    }
   };
 
   return (
@@ -74,7 +96,15 @@ export default function HomeScreen() {
           {loading ? <LoadingState /> :
             posts.length === 0 ? <EmptyState title="No posts yet" message="Follow people to see their posts." /> :
             posts.slice(0, 8).map(post => (
-              <FeedCard key={post.id} post={post} author={authors[post.user_id]} />
+              <FeedCard
+                key={post.id}
+                post={post}
+                author={authors[post.user_id]}
+                onPress={() => router.push(`/post/${post.id}`)}
+                onComment={() => router.push(`/post/${post.id}`)}
+                onLike={() => handleFeedLike(post.id)}
+                onShare={() => handleFeedShare(post.id)}
+              />
             ))
           }
         </Section>

@@ -1,9 +1,11 @@
-import { supabase } from '@/lib/supabase';
+import getSupabase from '@/lib/supabase';
 import type { Post, Profile } from '@/types';
 
 const PAGE = 15;
 
 export async function fetchFeed(beforeISO?: string, userIds?: string[]): Promise<Post[]> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   let q = supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(PAGE);
   if (userIds?.length) q = q.in('user_id', userIds);
   if (beforeISO) q = q.lt('created_at', beforeISO);
@@ -14,6 +16,8 @@ export async function fetchFeed(beforeISO?: string, userIds?: string[]): Promise
 
 export async function fetchProfilesByIds(ids: string[]): Promise<Record<string, Profile>> {
   if (!ids.length) return {};
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { data } = await supabase
     .from('profiles')
     .select('id,user_id,name,username,avatar_url,bio')
@@ -24,6 +28,8 @@ export async function fetchProfilesByIds(ids: string[]): Promise<Record<string, 
 }
 
 export async function createPost(userId: string, content: string, imageUrl?: string | null) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
   const { data, error } = await supabase
     .from('posts')
     .insert({ user_id: userId, content, image_url: imageUrl ?? null })
