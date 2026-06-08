@@ -3,12 +3,13 @@ import type { Post, Profile } from '@/types';
 
 const PAGE = 15;
 
-export async function fetchFeed(beforeISO?: string, userIds?: string[]): Promise<Post[]> {
+export async function fetchFeed(beforeISO?: string, userIds?: string[], offset?: number): Promise<Post[]> {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase client not available');
   let q = supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(PAGE);
   if (userIds?.length) q = q.in('user_id', userIds);
   if (beforeISO) q = q.lt('created_at', beforeISO);
+  if (offset && offset > 0) q = q.range(offset, offset + PAGE - 1);
   const { data, error } = await q;
   if (error) throw error;
   return (data || []) as Post[];

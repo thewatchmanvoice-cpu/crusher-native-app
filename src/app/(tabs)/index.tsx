@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Alert, Share, View, ScrollView, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { Alert, Share, View, ScrollView, Text, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Heart } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { SearchBar } from '@/components/SearchBar';
 import { FeedCard } from '@/components/FeedCard';
@@ -12,26 +13,62 @@ import { Colors } from '@/constants/colors';
 import { Spacing, Radius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { fetchFeed, fetchProfilesByIds } from '@/services/feed';
-import { likePost } from '@/services/posts';
+import { likePost, unlikePost, fetchPostLikes, fetchPostLikeByUser } from '@/services/posts';
 import type { Post, Profile } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 
 const TABS = ['For you', 'Following', 'Trending'] as const;
+const PAGE_SIZE = 15;
+
+interface PostWithLikes extends Post {
+  likeCount: number;
+  isLiked: boolean;
+}
 
 export default function HomeScreen() {
   const { user } = useAuth();
   const [tab, setTab] = useState<typeof TABS[number]>('For you');
   const [query, setQuery] = useState('');
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostWithLikes[]>([]);
   const [authors, setAuthors] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
 
-  const load = async () => {
-    const data = await fetchFeed();
-    setPosts(data);
-    const map = await fetchProfilesByIds([...new Set(data.map(p => p.user_id))]);
-    setAuthors(map);
+  const load = async (newOffset = 0) => {
+    try {
+      const data = await fetchFeed(undefined, undefined, newOffset);
+      
+      // Fetch likes info for all posts
+      const postsWithLikes = await Promise.all(
+        data.map(async (post) => {
+          try {
+            const [likeCount, isLiked] = await Promise.all([
+              fetchPostLikes(post.id),
+              user ? fetchPostLikeByUser(post.id, user.id) : Promise.resolve(false),
+            ]);
+            return { ...post, likeCount, isLiked };
+          } catch (err) {
+            console.error('Error fetching likes for post:', err);
+            return { ...post, likeCount: 0, isLiked: false };
+          }
+        })
+      );
+
+      if (newOffset === 0) {
+        setPosts(postsWithLikes);
+      } else {
+        setPosts(prev => [...prev, ...postsWithLikes]);
+      }
+      
+      const map = await fetchProfilesByIds([...new Set(data.map(p => p.user_id))]);
+      setAuthors(prev => ({ ...prev, ...map }));
+      setOffset(newOffset + PAGE_SIZE);
+    } catch (error: any) {
+      console.error('Error loading feed:', error);
+      Alert.alert('Error', error?.message || 'Unable to load posts');
+    }
   };
 
   useEffect(() => {
@@ -40,8 +77,19 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await load();
+    setOffset(0);
+    await load(0);
     setRefreshing(false);
+  };
+
+  const loadMorePosts = async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    try {
+      await load(offset);
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   const handleFeedLike = async (postId: string) => {
@@ -49,11 +97,36 @@ export default function HomeScreen() {
       Alert.alert('Login required', 'Please sign in to like posts.');
       return;
     }
+
+    // Find the post
+    const postIndex = posts.findIndex(p => p.id === postId);
+    if (postIndex === -1) return;
+
+    const post = posts[postIndex];
+
     try {
-      await likePost(postId, user.id);
-      Alert.alert('Liked', 'Your like was saved.');
+      if (post.isLiked) {
+        await unlikePost(postId, user.id);
+        setPosts(prev => 
+          prev.map(p => 
+            p.id === postId 
+              ? { ...p, isLiked: false, likeCount: Math.max(0, p.likeCount - 1) }
+              : p
+          )
+        );
+      } else {
+        await likePost(postId, user.id);
+        setPosts(prev => 
+          prev.map(p => 
+            p.id === postId 
+              ? { ...p, isLiked: true, likeCount: p.likeCount + 1 }
+              : p
+          )
+        );
+      }
     } catch (error: any) {
-      Alert.alert('Unable to like', error?.message || 'Please try again.');
+      console.error('Error updating like:', error);
+      Alert.alert('Unable to update like', error?.message || 'Please try again.');
     }
   };
 
@@ -95,17 +168,28 @@ export default function HomeScreen() {
         <Section title="Trending now">
           {loading ? <LoadingState /> :
             posts.length === 0 ? <EmptyState title="No posts yet" message="Follow people to see their posts." /> :
-            posts.slice(0, 8).map(post => (
-              <FeedCard
-                key={post.id}
-                post={post}
-                author={authors[post.user_id]}
-                onPress={() => router.push(`/post/${post.id}`)}
-                onComment={() => router.push(`/post/${post.id}`)}
-                onLike={() => handleFeedLike(post.id)}
-                onShare={() => handleFeedShare(post.id)}
-              />
-            ))
+            <>
+              {posts.map(post => (
+                <FeedCard
+                  key={post.id}
+                  post={post}
+                  author={authors[post.user_id]}
+                  onPress={() => router.push(`/post/${post.id}`)}
+                  onComment={() => router.push(`/post/${post.id}`)}
+                  onLike={() => handleFeedLike(post.id)}
+                  onShare={() => handleFeedShare(post.id)}
+                />
+              ))}
+              <View style={{ alignItems: 'center', paddingVertical: Spacing.lg }}>
+                <TouchableOpacity onPress={loadMorePosts} disabled={loadingMore} style={styles.loadMoreButton}>
+                  {loadingMore ? (
+                    <ActivityIndicator color={Colors.primary} />
+                  ) : (
+                    <Text style={styles.loadMoreText}>Load More Posts</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </>
           }
         </Section>
       </ScrollView>
@@ -130,4 +214,6 @@ const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', gap: Spacing.sm },
   tab: { paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm, borderRadius: Radius.pill, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border },
   tabActive: { borderColor: Colors.primary, backgroundColor: Colors.primary + '15' },
+  loadMoreButton: { paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md, backgroundColor: Colors.primary, borderRadius: Radius.lg, minWidth: 150, alignItems: 'center' },
+  loadMoreText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 });

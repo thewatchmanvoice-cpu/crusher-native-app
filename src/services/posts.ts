@@ -119,7 +119,15 @@ export async function addCommentToPost(postId: string, userId: string, content: 
     .single();
   if (error) throw error;
 
-  return data as PostComment;
+  // Fetch the author profile for this comment
+  const { data: profile, error: profileError } = await sb
+    .from('profiles')
+    .select('id,user_id,name,username,avatar_url,bio')
+    .eq('user_id', userId)
+    .single();
+  if (profileError) console.warn('Could not fetch profile:', profileError);
+
+  return { ...data, author: profile || null } as PostComment;
 }
 
 export async function addReactionToPost(postId: string, userId: string, reactionType: string) {
@@ -142,12 +150,48 @@ export async function likePost(postId: string, userId: string) {
   if (!supabase) throw new Error('Supabase client not available');
   const sb = supabase as any;
 
+  // Check if already liked to avoid duplicate constraint error
+  const { data: existing, error: checkError } = await sb
+    .from('post_likes')
+    .select('id')
+    .eq('post_id', postId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (checkError) {
+    console.error('Error checking existing like:', checkError);
+    throw checkError;
+  }
+
+  if (existing) {
+    console.log('Already liked this post');
+    return existing as PostLike;
+  }
+
   const { data, error } = await sb
     .from('post_likes')
     .insert({ post_id: postId, user_id: userId })
     .select()
     .single();
-  if (error) throw error;
+  
+  if (error) {
+    console.error('Error adding like:', error);
+    throw error;
+  }
 
+  console.log('Like added successfully:', data);
   return data as PostLike;
+}
+
+export async function unlikePost(postId: string, userId: string) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Supabase client not available');
+  const sb = supabase as any;
+
+  const { error } = await sb
+    .from('post_likes')
+    .delete()
+    .eq('post_id', postId)
+    .eq('user_id', userId);
+  if (error) throw error;
 }

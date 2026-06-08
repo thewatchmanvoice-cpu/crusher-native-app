@@ -14,27 +14,45 @@ export async function listDMThreads(userId: string) {
   return data || [];
 }
 
-export async function fetchMessages(threadKey: string) {
+export async function fetchMessages(senderId: string, recipientId: string) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase client not available');
+  
+  console.log('Fetching messages between:', { senderId, recipientId });
+  
   const { data, error } = await supabase
     .from('private_messages')
     .select('*')
-    .eq('thread_id', threadKey)
+    .or(`and(sender_id.eq.${senderId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${senderId})`)
     .order('created_at', { ascending: true });
-  if (error) throw error;
+  
+  if (error) {
+    console.error('Error fetching messages:', error);
+    throw error;
+  }
+  
+  console.log('Messages fetched:', data?.length || 0);
   return data || [];
 }
 
-export async function sendMessage(threadId: string, senderId: string, recipientId: string, content: string) {
+export async function sendMessage(senderId: string, recipientId: string, content: string) {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Supabase client not available');
+  
+  console.log('Sending message:', { senderId, recipientId, content });
+  
   const { data, error } = await supabase
     .from('private_messages')
-    .insert({ thread_id: threadId, sender_id: senderId, recipient_id: recipientId, content })
+    .insert({ sender_id: senderId, recipient_id: recipientId, content })
     .select()
     .single();
-  if (error) throw error;
+  
+  if (error) {
+    console.error('Error sending message:', error);
+    throw error;
+  }
+  
+  console.log('Message sent successfully:', data);
   return data;
 }
 

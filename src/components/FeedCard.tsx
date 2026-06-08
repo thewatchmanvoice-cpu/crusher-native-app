@@ -6,10 +6,20 @@ import { Spacing, Radius, Shadow } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import type { Post, Profile } from '@/types';
 
-interface Props { post: Post; author?: Profile; onPress?: () => void; onLike?: () => void; onComment?: () => void; onShare?: () => void; }
+interface Props { 
+  post: Post & { likeCount?: number; isLiked?: boolean }; 
+  author?: Profile; 
+  onPress?: () => void; 
+  onLike?: () => void; 
+  onComment?: () => void; 
+  onShare?: () => void; 
+}
 
 export function FeedCard({ post, author, onPress, onLike, onComment, onShare }: Props) {
   const initials = (author?.name || 'U').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+  const likeCount = post.likeCount ?? 0;
+  const isLiked = post.isLiked ?? false;
+
   return (
     <View style={[styles.wrap, Shadow.card]}>
       <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.body}>
@@ -30,10 +40,22 @@ export function FeedCard({ post, author, onPress, onLike, onComment, onShare }: 
         {post.image_url && <Image source={{ uri: post.image_url }} style={styles.image} />}
       </TouchableOpacity>
 
+      <View style={styles.stats}>
+        <Text style={Typography.caption}>{likeCount} likes</Text>
+        <Text style={Typography.caption}>·</Text>
+        <Text style={Typography.caption}>1 comment</Text>
+      </View>
+
       <View style={styles.actions}>
-        <TouchableOpacity onPress={onLike} style={styles.actionBtn}><Heart size={18} color={Colors.textMuted} /></TouchableOpacity>
-        <TouchableOpacity onPress={onComment} style={styles.actionBtn}><MessageCircle size={18} color={Colors.textMuted} /></TouchableOpacity>
-        <TouchableOpacity onPress={onShare} style={styles.actionBtn}><Share2 size={18} color={Colors.textMuted} /></TouchableOpacity>
+        <TouchableOpacity onPress={onLike} style={styles.actionBtn}>
+          <Heart size={18} color={isLiked ? Colors.primary : Colors.textMuted} fill={isLiked ? Colors.primary : 'none'} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onComment} style={styles.actionBtn}>
+          <MessageCircle size={18} color={Colors.textMuted} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onShare} style={styles.actionBtn}>
+          <Share2 size={18} color={Colors.textMuted} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -45,6 +67,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   avatar: { width: 40, height: 40, borderRadius: Radius.pill, backgroundColor: Colors.surfaceAlt },
   image: { width: '100%', aspectRatio: 1.2, borderRadius: Radius.lg, marginTop: Spacing.md, backgroundColor: Colors.surfaceAlt },
+  stats: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginTop: Spacing.md },
   actions: { flexDirection: 'row', gap: Spacing.lg, marginTop: Spacing.md },
   actionBtn: { padding: Spacing.xs },
 });

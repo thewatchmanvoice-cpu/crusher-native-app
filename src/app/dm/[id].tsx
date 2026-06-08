@@ -1,36 +1,71 @@
-import { useLocalSearchParams } from 'expo-router';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { sendMessage, fetchMessages } from '@/services/dms';
 import { Colors } from '@/constants/colors';
 import { Spacing, Radius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
+import { ArrowLeft } from 'lucide-react-native';
 
 export default function DMDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
+  const params = useLocalSearchParams<{ id: string }>();
+  const otherId = params.id;
+  const { user, loading: authLoading } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-    fetchMessages(String(id)).then(setMessages).catch(() => {});
-  }, [id]);
+    if (!user || !otherId || authLoading) return;
+    setLoading(true);
+    fetchMessages(user.id, otherId)
+      .then(setMessages)
+      .catch((err) => {
+        console.error('Error fetching messages:', err);
+        Alert.alert('Error', 'Could not load messages');
+      })
+      .finally(() => setLoading(false));
+  }, [user?.id, otherId, authLoading]);
 
   const send = async () => {
-    if (!user || !text.trim()) return;
-    const msg = await sendMessage(String(id), user.id, String(id), text.trim());
-    setMessages(prev => [...prev, msg]);
-    setText('');
+    if (!user || !otherId || !text.trim()) return;
+    setSending(true);
+    try {
+      const msg = await sendMessage(user.id, otherId, text.trim());
+      setMessages(prev => [...prev, msg]);
+      setText('');
+    } catch (err: any) {
+      console.error('Error sending message:', err);
+      Alert.alert('Error', err?.message || 'Could not send message');
+    } finally {
+      setSending(false);
+    }
   };
+
+  if (loading || authLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: Colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: Colors.background }}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <ArrowLeft size={24} color={Colors.text} />
+        </TouchableOpacity>
+        <Text style={Typography.h3}>Message</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <FlatList
         data={messages}
         keyExtractor={(m) => m.id}
-        contentContainerStyle={{ padding: Spacing.lg, gap: Spacing.sm }}
+        contentContainerStyle={{ padding: Spacing.lg, gap: Spacing.sm, flexGrow: 1 }}
+        inverted
         renderItem={({ item }) => {
           const mine = item.sender_id === user?.id;
           return (
@@ -41,9 +76,20 @@ export default function DMDetail() {
         }}
       />
       <View style={styles.composer}>
-        <TextInput value={text} onChangeText={setText} placeholder="Message…" placeholderTextColor={Colors.textSubtle} style={styles.input} />
-        <TouchableOpacity onPress={send} style={styles.send}>
-          <Text style={{ color: '#fff', fontWeight: '700' }}>Send</Text>
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          placeholder="Message…"
+          placeholderTextColor={Colors.textSubtle}
+          style={styles.input}
+          editable={!sending}
+        />
+        <TouchableOpacity onPress={send} disabled={sending} style={styles.send}>
+          {sending ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={{ color: '#fff', fontWeight: '700' }}>Send</Text>
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -51,6 +97,7 @@ export default function DMDetail() {
 }
 
 const styles = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md, borderBottomWidth: 1, borderBottomColor: Colors.border },
   bubble: { padding: Spacing.md, borderRadius: Radius.lg, maxWidth: '80%' },
   mine: { alignSelf: 'flex-end', backgroundColor: Colors.primary },
   theirs: { alignSelf: 'flex-start', backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border },

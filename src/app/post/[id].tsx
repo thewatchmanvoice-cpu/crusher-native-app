@@ -9,7 +9,7 @@ import { Colors } from '@/constants/colors';
 import { Spacing, Radius, Shadow } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { useAuth } from '@/hooks/useAuth';
-import { fetchPostById, fetchPostComments, fetchPostLikes, fetchPostLikeByUser, fetchPostReactions, addCommentToPost, addReactionToPost, likePost } from '@/services/posts';
+import { fetchPostById, fetchPostComments, fetchPostLikes, fetchPostLikeByUser, fetchPostReactions, addCommentToPost, addReactionToPost, likePost, unlikePost } from '@/services/posts';
 import type { PostComment, Profile } from '@/types';
 
 export default function PostDetailScreen() {
@@ -99,13 +99,19 @@ export default function PostDetailScreen() {
   };
 
   const handleLike = async () => {
-    if (!user || hasLiked) return;
+    if (!user) return;
     try {
-      await likePost(postId!, user.id);
-      setLikeCount(count => count + 1);
-      setHasLiked(true);
+      if (hasLiked) {
+        await unlikePost(postId!, user.id);
+        setLikeCount(count => Math.max(count - 1, 0));
+        setHasLiked(false);
+      } else {
+        await likePost(postId!, user.id);
+        setLikeCount(count => count + 1);
+        setHasLiked(true);
+      }
     } catch (error: any) {
-      Alert.alert('Unable to like', error?.message || 'Please try again');
+      Alert.alert('Unable to update like', error?.message || 'Please try again');
     }
   };
 
@@ -189,8 +195,9 @@ export default function PostDetailScreen() {
           </View>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={handleLike} disabled={hasLiked} style={[styles.primaryButton, hasLiked && styles.disabledButton]}>
-              <Text style={styles.primaryButtonText}>{hasLiked ? 'Liked' : 'Like'}</Text>
+            <TouchableOpacity onPress={handleLike} style={[styles.primaryButton, hasLiked && styles.likedButton]}>
+              <Heart size={18} color={hasLiked ? Colors.primary : '#fff'} style={{ marginRight: 8 }} />
+              <Text style={[styles.primaryButtonText, hasLiked && { color: Colors.primary }]}>{hasLiked ? 'Liked' : 'Like'}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleShare} style={[styles.primaryButton, styles.secondaryButton]}>
               <Text style={styles.primaryButtonText}>Share</Text>
@@ -277,19 +284,19 @@ const styles = StyleSheet.create({
   postImage: { width: '100%', height: 200, borderRadius: Radius.lg, marginTop: Spacing.md, backgroundColor: Colors.surfaceAlt },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.lg },
   statItem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
-  buttonRow: { marginTop: Spacing.lg },
-  primaryButton: { backgroundColor: Colors.primary, padding: Spacing.lg, borderRadius: Radius.lg, alignItems: 'center' },
+  buttonRow: { marginTop: Spacing.lg, flexDirection: 'row', gap: Spacing.md },
+  primaryButton: { backgroundColor: Colors.primary, padding: Spacing.lg, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', flex: 1 },
   primaryButtonText: { color: '#fff', fontWeight: '700' },
+  likedButton: { backgroundColor: '#fff', borderWidth: 2, borderColor: Colors.primary },
   section: { gap: Spacing.sm },
   reactionRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: Spacing.sm, borderBottomWidth: 1, borderBottomColor: Colors.border },
   commentCard: { backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.lg, marginTop: Spacing.sm, borderWidth: 1, borderColor: Colors.border },
   commentInputWrapper: { gap: Spacing.sm },
   commentInput: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: Radius.lg, padding: Spacing.lg, color: Colors.text, minHeight: 100, textAlignVertical: 'top' },
-  disabledButton: { backgroundColor: Colors.border },
   reactionButtonsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginTop: Spacing.sm },
   reactionOption: { paddingVertical: Spacing.sm, paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: Colors.border, borderRadius: Radius.pill, backgroundColor: Colors.surface },
   reactionOptionText: { fontSize: 16 },
-  secondaryButton: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.primary, marginLeft: Spacing.sm },
+  secondaryButton: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.primary },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'center', alignItems: 'center' },
   modalImage: { width: '100%', height: '100%', resizeMode: 'contain' },
 });
