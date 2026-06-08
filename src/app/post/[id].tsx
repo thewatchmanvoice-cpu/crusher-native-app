@@ -1,15 +1,15 @@
+import { formatDistanceToNow } from 'date-fns';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, Heart, MessageCircle } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { formatDistanceToNow } from 'date-fns';
-import { ArrowLeft, Heart, MessageCircle } from 'lucide-react-native';
 
 import { Colors } from '@/constants/colors';
-import { Spacing, Radius, Shadow } from '@/constants/spacing';
+import { Radius, Shadow, Spacing } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { useAuth } from '@/hooks/useAuth';
-import { fetchPostById, fetchPostComments, fetchPostLikes, fetchPostLikeByUser, fetchPostReactions, addCommentToPost, addReactionToPost, likePost, unlikePost } from '@/services/posts';
+import { addCommentToPost, addReactionToPost, fetchPostById, fetchPostComments, fetchPostLikeByUser, fetchPostLikes, fetchPostReactions, likePost, unlikePost } from '@/services/posts';
 import type { PostComment, Profile } from '@/types';
 
 export default function PostDetailScreen() {

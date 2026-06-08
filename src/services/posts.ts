@@ -1,5 +1,5 @@
 import getSupabase from '@/lib/supabase';
-import type { Post, PostComment, PostReaction, PostLike, Profile } from '@/types';
+import type { Post, PostComment, PostLike, PostReaction, Profile } from '@/types';
 
 export async function fetchPostById(postId: string): Promise<{ post: Post | null; author: Profile | null }> {
   const supabase = getSupabase();

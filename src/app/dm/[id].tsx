@@ -1,12 +1,12 @@
-import { useLocalSearchParams, router } from 'expo-router';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { sendMessage, fetchMessages } from '@/services/dms';
 import { Colors } from '@/constants/colors';
-import { Spacing, Radius } from '@/constants/spacing';
+import { Radius, Spacing } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
+import { useAuth } from '@/hooks/useAuth';
+import { fetchMessages, sendMessage } from '@/services/dms';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function DMDetail() {
   const params = useLocalSearchParams<{ id: string }>();

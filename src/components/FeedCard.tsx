@@ -1,10 +1,10 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
-import { formatDistanceToNow } from 'date-fns';
 import { Colors } from '@/constants/colors';
-import { Spacing, Radius, Shadow } from '@/constants/spacing';
+import { Radius, Shadow, Spacing } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import type { Post, Profile } from '@/types';
+import { formatDistanceToNow } from 'date-fns';
+import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface Props { 
   post: Post & { likeCount?: number; isLiked?: boolean }; 
